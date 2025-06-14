@@ -60,12 +60,14 @@ int lastEXPOSval = -1;
 // Последовательное соединение
 
 bool serialConnected = false;
-const char* RESP_KEY = "ggyes\n";
-const char* AUTH_KEY = "g_group\n";
+const char* RESP_KEY = "ggyes";
+const char* AUTH_KEY = "g_group";
 
 String serialRxBuffer = "";
 unsigned long serialAuthStartTime = 0;
-const unsigned long SERIAL_AUTH_TIMEOUT = 3000;
+const unsigned long SERIAL_AUTH_TIMEOUT = 2000;
+unsigned long lastSerialReceiveTime = 0;
+const unsigned long SERIAL_DISCONNECT_TIMEOUT = 5000; // 15 секунд без данных
 
 // Таймеры
 
@@ -82,7 +84,39 @@ uint16_t PUMPON_color = 0x9F2A;
 uint16_t PUMPOFF_color = 0xC902;
 //Fuctions
 
+//Serial port
+void checkSerialAuth() {
 
+ if (serialConnected && (millis() - lastSerialReceiveTime > SERIAL_DISCONNECT_TIMEOUT)) {
+    // Serial.println("Serial disconnected due to timeout");
+    serialConnected = false;
+  }
+
+  if (serialConnected) return;
+
+  if (Serial.available()) {
+    String msg = Serial.readStringUntil('\n');
+    msg.trim();
+
+    lastSerialReceiveTime = millis();  // обновляем таймер при любом приёме
+
+    if (msg == AUTH_KEY) {
+      Serial.println(RESP_KEY);
+      serialConnected = true;
+      Serial.println("AUTH OK");
+    } else {
+      Serial.println("AUTH FAIL");
+    }
+  }
+}
+
+
+void sendSerialData() {
+  Serial.print("counts,");
+  Serial.print(analog_counts);
+  Serial.print(",time,");
+  Serial.print(startTime);
+}
 
 //UI func
 
@@ -169,6 +203,7 @@ void setup() {
 
 void loop() {
 
+  checkSerialAuth();
   eb.tick();
 
   unsigned long now = millis();
@@ -187,6 +222,11 @@ void loop() {
       break;
     
     case UI_STARTED:
+
+    // if (serialConnected && millis() - lastSerialSend > 2000) {
+    //   Serial.println("PING");
+    //   lastSerialSend = millis();
+    // }
 
     if (expos_edit_mode == false) {    
 
@@ -213,13 +253,13 @@ void loop() {
       updatePUMPstatus();
 
       pumpEnabled = !pumpEnabled;
-      Serial.println(pumpEnabled);
+      // Serial.println(pumpEnabled);
       digitalWrite(PUMP_ONOFF, pumpEnabled ? HIGH : LOW);
       // digitalWrite(13, pumpEnabled ? HIGH : LOW);
 
       if (millis() - bootStartTime >= 500) {
       waiting = false;
-      Serial.println("Таймер сработал!");
+      // Serial.println("Таймер сработал!");
       }
 
       pumpEnabled = !pumpEnabled;
@@ -243,10 +283,11 @@ void loop() {
       // }
 
       if (millis() - startTime >= EXPOS*1000) {
-
+        sendSerialData();
       // Таймер сработал — выводим результат
         if (analog_counts != lastAnalog) {
           updateCOUNTValues();
+          
           lastAnalog = analog_counts;
 
         }
