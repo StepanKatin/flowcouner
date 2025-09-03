@@ -11,22 +11,24 @@
 
 // Screen Pins
 
-#define TFT_CS   15
+#define TFT_CS   5
 #define TFT_RST  4
-#define TFT_DC   16
-#define SDA      17   // MOSI
-#define SCK      41   // SCK
+#define TFT_DC   2
+#define SDA      23   // MOSI
+#define SCK      18   // SCK
+
+
+#define SBM_SIGNAL 36
 
 // Enc Pins
-#define SBM_SIGNAL 10
-#define ENCODER_S1 11
-#define ENCODER_S2 12
-#define ENCODER_KEY 13
+#define ENCODER_S1 34
+#define ENCODER_S2 35
+#define ENCODER_KEY 34
 
 // Motor pins
-#define MOTOR_PWM 5
-#define MOTOR_DIR 6
-#define PUMP_ONOFF 7
+#define MOTOR_PWM 27
+#define MOTOR_DIR 26
+#define PUMP_ONOFF 25
 
 //Objects
 
