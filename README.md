@@ -25,5 +25,3 @@ Code for ionization flow counter device
   8. Имя файла нужно задавать в ручную!!! Если csv файл уже существует, то он перезапишется. 
 
 
-
-<img src="https://github.com/StepanKatin/flowcouner/blob/main/flowcounterelsch.jpg"/></h2>
